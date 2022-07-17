@@ -1,0 +1,121 @@
+from itertools import count
+from optparse import Values
+from os import statvfs_result
+import pandas as pd
+import numpy as np
+
+
+#Programming CHallenge 1 : Even-Odd Vending Machine
+def vendmachine(vend):
+    if(vend % 2) == 0:
+        print('Even')
+    else:
+        print('Odd')
+    count = 1
+    while count <10:
+        vend += 2
+        print(vend)
+        count += 1
+if __name__ == "__main__" :
+    try:
+        vend = float(input('Integer: '))
+        if vend.is_integer():
+            vendmachine(int(vend))
+        else:
+            print('Enter an Integer')
+    except ValueError:
+        print('Enter a Number')
+#Having difficulties getting the code to run as a function ex: vendmachine(11.5)
+
+
+
+
+#Programming Challenge #2 : Exploring a Quadratic Function Visually
+from  matplotlib import pyplot as plt
+
+x_axis = range(-10,10,2)
+y_axis=[]
+def quadplot(x,y):
+    plt.plot(x,y)
+    plt.show()
+if __name__ == "__main__":
+    for x in x_axis:
+        y_axis.append(x**2 + 2*x +1)
+    quadplot(x_axis, y_axis)
+
+
+#Programming Challenge #3: Statistics calculator
+from statistics import mean, median, mode, variance, variance_sd
+def read_data("mydatas.txt"):
+    listvalues = []
+    with open(mydata.txt) as stass:
+        for line in stass:
+            listvalues.append(float(line))
+    return listvalues
+
+def calc_stats(listvalues):
+    avg1 = mean(listvalues)
+    med = median(listedvalues)
+    mode1 = mode(listedvalues)
+    sd = variance_sd(listedvalues)
+
+    return avg1, med, mode1, sd 
+if __name__ == "__main__"
+    statsdata = read_data("mydata.txt")
+#I am a bit confused on how to use this function and dont want to do this without my own knowledge
+
+
+#Programming Challenge #4: Solving Single-Variable Inequalities
+from sympy import Poly, Symbol, solve_poly_inequality, SympifyError, 
+
+def isolve(ineq_obj):
+    x = Symbol('x')
+    expr = ineq_obj.lhs
+    rel = ineq_obj.rel_op
+
+if expr.is_polynomial():
+    p = Poly(expr, x)
+    return solve_poly_inequality(p, rel)
+elif expr.is_rational_function():
+    p1, p2 = expr.as_numer_denom()
+    num = Poly(p1)
+    denom = Poly(p2)
+    return solve_rational_inequalities([[((num, denom), rel)]])
+else:
+    return solve_univariate_inequality(ineq_obj , x, relational=False)
+
+
+
+#Programming Challenge #5 : Law of Large Numbers
+import random
+def roll(num_trials):
+    rolls = []
+    for t in range(num_trials):
+        rolls.append(random.randint(1, 6))
+    return sum(rolls)/num_trials
+if __name__ == '__main__':
+    expected_value = 3.5
+    print('Expected value: {0}'.format(expected_value))
+    for trial in [100, 1000, 10000, 100000, 500000]:
+        avg = roll(trial)
+        print('Trials: {0} Trial average {1}'.format(trial, avg))
+
+
+
+#Programming Challenge #6: Implement the Gradient Descent
+from sympy import Derivative, Symbol, sympify, solve
+import matplotlib.pyplot as plt
+def gradiant_descent(x0, f1x, x):
+    if not solve(f1x):
+    print("DNE".
+format(f1x))
+    return None
+
+#I don't understand how to move forward with this problem it mnay be too difficult for me to do
+
+
+
+
+
+
+
