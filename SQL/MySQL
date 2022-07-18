@@ -1,0 +1,39 @@
+-- Question 1
+SELECT max(distance), flight FROM flights
+GROUP BY flight
+ORDER BY max(distance) desc limit 1;
+
+
+-- Question 2
+
+select distinct(engines) from planes;
+
+select max(seats), engines from planes  
+where (select max(distinct(engines)) from planes)
+group by engines;
+
+    
+-- Question 3
+SELECT count(*) from flights  ;
+
+-- Question 4
+select count(*), carrier from flights  
+group by carrier;
+
+-- Question 5
+select flight, carrier from flights  
+order by flight desc;
+
+-- Question 6
+
+select flight, carrier from flights  
+order by flight desc limit 5;
+
+-- Question 7
+select flight, carrier, distance from flights where distance >= 1000
+order by flight desc;
+
+-- Question 8
+
+select avg(distance), carrier from flights
+group by carrier
