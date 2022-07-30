@@ -1,0 +1,124 @@
+---
+title: "R Assignment 2"
+author: "Keeno Glanville"
+date: "2022-07-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(compare)
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(corrplot)
+library(arsenal)
+```
+
+
+## Load Data(w/Bonus)
+```{r}
+urldata="https://raw.githubusercontent.com/kglan/MS-Data-Science-Bridge-/main/R/CPS1988.csv"
+wagedatarough<-read_csv(url(urldata))
+wagedatarough
+```
+
+
+
+## Question 1
+```{r}
+summary(wagedatarough)
+meanedu1 <- mean(wagedatarough$education)
+mededu1 <- median(wagedatarough$education)
+meanexp1<- mean(wagedatarough$experience)
+medexp1<- median(wagedatarough$experience)
+
+meanedu1
+mededu1
+
+meanexp1
+medexp1
+```
+
+
+
+## Question 2,3,5
+```{r}
+colnames(wagedatarough)
+wagedata <- wagedatarough%>%
+  select(-"...1")%>%
+  rename(Wage_week = "wage",
+         Education_yrs = "education",
+         Experience_yrs = "experience",
+         Ethnicity = "ethnicity",
+         Urban_Area = "smsa",
+         Region = "region",
+         PartTime= "parttime")%>%
+  mutate(Salary = as.numeric(Wage_week*52), 
+         .before = Education_yrs)%>%
+  filter(wagedatarough$parttime == "no")%>%
+  select(-PartTime)%>%
+  mutate(Ethnicity = str_replace(Ethnicity,"cauc",  "White"))%>%
+  mutate(Ethnicity = str_replace(Ethnicity,"afam",  "Black"))
+
+wagedata
+
+
+```
+
+
+
+
+## Question #4
+```{r}
+summary(wagedata)
+meanedu2 <- mean(wagedata$Education_yrs)
+mededu2 <- median(wagedata$Education_yrs)
+meanexp2 <- mean(wagedata$Experience_yrs)
+medexp2 <- median(wagedata$Experience_yrs)
+
+meanedu2
+mededu2
+
+meanexp2
+medexp2
+
+
+
+
+compare(meanedu1,meanedu2)
+compare(mededu1, mededu2)
+
+compare(meanexp1, meanexp2)
+compare(medexp1,medexp2)
+```
+
+
+
+
+
+
+## Question 5,6
+```{r}
+wagedata[order(-wagedata$Experience_yrs),]
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
