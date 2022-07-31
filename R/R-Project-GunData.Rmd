@@ -1,0 +1,228 @@
+---
+title: "R Assignment 3"
+author: "Keeno Glanville"
+date: "2022-07-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(compare)
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(corrplot)
+library(car)
+library(caret)
+library(lmtest)
+library(lattice)
+library(PerformanceAnalytics)
+```
+
+# What factor influences crime?
+### Load data(bonus)
+
+```{r}
+set.seed(1324)
+urldata <- "https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/AER/Guns.csv"
+gundata.r <- read_csv(url(urldata))
+
+
+
+```
+
+
+
+## We first start by cleaning the data set and renaming columns to make the names clearer
+```{r}
+gundata_clean <- gundata.r %>%
+  select(-"...1", -"male")%>%
+  rename("%Black" = "afam",
+         "%White"= "cauc",
+         "Crime/100k" = "violent",
+         "Murder/100k" = "murder",
+         "Robbery/100k" = "robbery",
+         "Prisoners/100k" = "prisoners",
+         "Income/capitaofstate" = "income",
+         "Density(sqrmi/1000)" = "density",
+          ShallCarryLaw = "law",
+         "population/mil" = population)
+view(gundata_clean)
+
+summary(gundata_clean)
+
+```
+
+
+### We wil now pair the data together to recognize the trends within our data
+
+```{r}
+gundata_pairs <- gundata_clean%>%
+  mutate(ShallCarryLaw = ifelse(ShallCarryLaw == "no",0,1))
+pairs(data=gundata_pairs,
+      ~ year+ `Crime/100k`+ `Murder/100k` + `Robbery/100k`+ `Prisoners/100k`+
+        `Density(sqrmi/1000)` + `Income/capitaofstate`)
+
+```
+
+## In the before step we see tremendous trends within the data and now we want to see our correlation coefficients
+### We will print corrplot and histograms as well as boxplots
+
+```{r}
+gundata_corplot <- gundata_clean %>%
+  select(-"state", -"ShallCarryLaw")
+
+chart.Correlation(gundata_corplot,
+                  method="pearson",
+                  histogram=TRUE,
+                  pch=16)
+
+gundata_cor <- cor(gundata_corplot, method = "pearson")
+col_gd <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(gundata_cor, method = "color", col = col_gd(200),
+         type = "upper", order = "hclust",
+         addCoef.col = "black",
+         tl.col = "black", tl.srt = 45,)
+
+```
+
+
+
+# BoxPlot shows the trend of crime over the years, with a slight trend upwards heavily skewed by District of Columbia
+
+```{r}
+
+ggplot(gundata_clean, aes(x= year, y= `Crime/100k`, group = `year`)) +
+         geom_boxplot( fill="skyblue", notch=FALSE) +
+         geom_jitter( size=1, color="orange", width=0.3)
+
+```
+
+
+
+
+### Scatter Density vs Murder as this has our largest correlation coefficient 
+
+```{r}
+attach(gundata_clean)
+DensityvMurder <- lm(`Murder/100k` ~ `Density(sqrmi/1000)`, data = gundata_clean)
+plot(DensityvMurder, ask =FALSE)
+avPlots(DensityvMurder)
+detach(gundata_clean)
+
+```
+
+
+
+## Now we want to look at plots of crime with regards to state. We see District of Columbia elevated overall
+```{r}
+xyplot(log(`Crime/100k`) ~ as.numeric(as.character(year)) | state, data = gundata_clean, type = "l")
+
+```
+
+# We conclude that we see the data is heavily skewed due to the District of Columbia
+```{r}
+summary(DensityvMurder)
+
+```
+
+
+# We want to compare the data again but removing District of Columbia as a huge outlier
+
+
+
+
+### Plots redone without District of Columbia
+```{r}
+attach(gundata_clean)
+gundata.noDOC <- filter(gundata_clean, state != "District of Columbia")
+gundata_noDOC <- gundata.noDOC %>%
+  select(-"state", -"ShallCarryLaw")
+detach(gundata_clean)
+
+summary(gundata.noDOC)
+
+pairs(data=gundata_noDOC,
+      ~ year+ `Crime/100k`+ `Murder/100k` + `Robbery/100k`+ `Prisoners/100k`+
+        `Density(sqrmi/1000)` + `Income/capitaofstate`)
+
+chart.Correlation(gundata_noDOC,
+                  method="pearson",
+                  histogram=TRUE,
+                  pch=16)
+
+gundata_noDOC_cor <- cor(gundata_noDOC,  method = "pearson")
+col_noDOC <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(gundata_noDOC_cor, method = "color", col = col_noDOC(200),
+         type = "upper", order = "hclust",
+         addCoef.col = "black",
+         tl.col = "black", tl.srt = 45,)
+
+
+ggplot(gundata_noDOC, aes(x= year, y= `Crime/100k`, group = `year`)) +
+  geom_boxplot( fill="skyblue", notch=FALSE) +
+  geom_jitter( size=1, color="orange", width=0.3)
+
+
+
+```
+
+
+
+
+
+
+
+# We still see stronger parameters and correlation even with District of Columbia removed as an outlier
+
+```{r}
+attach(gundata_noDOC)
+DensityvMurder_noDOC <- lm(`Murder/100k` ~ `Density(sqrmi/1000)`, data = gundata_noDOC)
+plot(DensityvMurder_noDOC, ask =FALSE)
+avPlots(DensityvMurder_noDOC)
+detach(gundata_noDOC)
+
+
+```
+
+
+
+
+# From the data we see that no one factor influences Crime rates within a given city, it more so stems from a factor of all parameters
+
+## We can also compare the deviations of the gun data with and without the District of Columbia to assess the disproportion of the two (NA introduced for state and laws) 
+```{r}
+
+
+apply(gundata_clean, 2, sd)
+
+apply(gundata.noDOC, 2, sd)
+
+```
+
+
+
+## In conclusion, this data set is demonstrating to us that not just one factor influences the crime rate within a given state. We observed the data was heavily skewed for density with the district of Columbia having such a heavily dense population. As such it demonstrated that this was a strong contributing factor for Murder rate with a correlation coefficient of 0.75 and crime rate of 0.66 . However when we removed the District of Columbia the coeficient of density vs Murder rate turnt to -0.08 and VS Crime 0.22. While this was telling of how strong various factors influence the Crime rates. It was more telling that the general trend of the data stayed the same, telling us that all the factors play a role in Crime Rates.
+
+# Below is a bonus linear model to demonstrate the effectiveness of all the factors with one representing the loss of District of Columbia. As can be seen the results(pay attention to RSE) the model incorporating every state is more accurate as whatever district of Columbia was lacking it made up for in density.
+
+```{r}
+predp = lm(`Crime/100k` ~ year +`Murder/100k`+ `Robbery/100k`+`Prisoners/100k` +
+             `%Black` + `%White` + `population/mil` + `Income/capitaofstate` + 
+             `Density(sqrmi/1000)`, data = gundata.noDOC)
+summary(predp)
+
+
+predpall = lm(`Crime/100k` ~ year +`Murder/100k`+ `Robbery/100k`+`Prisoners/100k` +
+             `%Black` + `%White` + `population/mil` + `Income/capitaofstate` + 
+             `Density(sqrmi/1000)`, data = gundata_clean)
+summary(predpall)
+
+
+```
+
+
+
+
+
+
+
